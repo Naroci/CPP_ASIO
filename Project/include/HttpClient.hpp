@@ -13,7 +13,10 @@
 class HttpClient
 {
     public :
-        HttpClient(){}
+        HttpClient()
+        {
+          
+        }
 
         // Main Test Function.
         std::string DownloadString(std::string url, int port);
@@ -23,6 +26,9 @@ class HttpClient
         int GetBufferSize() const { return mBufferSize;}
 
         std::string GetEndpointAddress() const { return mEndpointAdr;}
+
+        asio::ip::basic_resolver_results<asio::ip::tcp> GetEndpointsFromString(std::string StringUrl, int port);
+
         int GetPort() const { return mPort;}
         bool GetIfReading() const { return mIsReading;}
 
@@ -33,4 +39,5 @@ class HttpClient
         std::string getStringResult(std::vector<char> &resultBuffer);
         int mPort = 80;
         std::string mEndpointAdr;
+        asio::io_context context;
 };

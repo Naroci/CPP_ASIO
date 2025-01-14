@@ -5,10 +5,6 @@
 #include <list>
 #include <array>
 
-#define ASIO_STANDALONE
-#include <asio.hpp>
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
 #include "../include/HttpClient.hpp"
 #include "../include/OSHelper.h"
 

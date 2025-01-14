@@ -66,6 +66,20 @@
         "vector": "cpp",
         "filesystem": "cpp",
         "list": "cpp",
-        "any": "cpp"
+        "any": "cpp",
+        "*.ipp": "cpp",
+        "__verbose_abort": "cpp",
+        "charconv": "cpp",
+        "clocale": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "csignal": "cpp",
+        "execution": "cpp",
+        "forward_list": "cpp",
+        "future": "cpp",
+        "print": "cpp",
+        "queue": "cpp",
+        "source_location": "cpp",
+        "variant": "cpp"
     }
 }
