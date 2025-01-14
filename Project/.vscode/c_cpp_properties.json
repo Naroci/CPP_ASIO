@@ -1,0 +1,45 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Users/mdmm/Downloads/asio-1.18.1/include"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${default}",
+                "C:\\Users\\mirco\\Downloads\\asio-1.18.2\\asio-1.18.2\\include",
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.19041.0",
+            "compilerPath": "C:/mingw-w64/x86_64-8.1.0-win32-seh-rt_v6-rev0/mingw64/bin/gcc.exe",
+            "compilerArgs": [
+                "-std=c++17"
+            ],
+            "cppStandard": "c++17",
+            "cStandard": "c99",
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+       
+    ],
+    "version": 4
+}
