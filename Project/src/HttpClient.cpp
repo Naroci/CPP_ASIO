@@ -202,6 +202,15 @@ std::string HttpClient::DownloadString(std::string url, int port = 80)
 
     url = checkURL(url);
     auto results = HttpClient::GetURLSubValues(url);
+    if (!results.empty())
+    {
+        for (const std::string entry : results)
+        {
+            std::cout << entry << "\n";
+        }
+
+        std::cout << "\n";
+    }
 
     // Intern den aktuellen Endpunkt setzen.
     HttpClient::currentEndpointUrl = url;
