@@ -12,7 +12,7 @@ class HttpClient
     struct HttpContentData
     {
         std::string Header;
-        std::vector<char> content;
+        std::vector<char> Body;
     };
 
     HttpContentData ExtractData(std::vector<std::byte> &load);
@@ -48,6 +48,7 @@ class HttpClient
     std::string mEndpointAdr;
     std::string GetStringFromBytes(std::vector<std::byte> &inputBytes);
     asio::io_context context;
+    std::vector<std::string> GetURLSubValues(std::string url);
 };
 
 #endif // HTTPCLIENT_HPP

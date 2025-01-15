@@ -1,17 +1,14 @@
 #include "../include/FileAccess.hpp"
 
-void FileAccess::WriteBytesToFile(std::vector<std::byte> &ToWrite) 
+void FileAccess::WriteBytesToFile(std::vector<char> &ToWrite) 
 {
     // Überprüfen, ob der Stream geöffnet ist
     if (getFileStream()->is_open())
     {
         for (size_t i = 0; i < ToWrite.size(); ++i)
         {
-            // Umwandlung von std::byte zu char
-            char byte = static_cast<char>(ToWrite[i]);
-            
             // Schreibe das Byte
-            getFileStream()->write(&byte, sizeof(byte));
+            getFileStream()->write(&ToWrite[i], sizeof(ToWrite[i]));
         }
     }
     else

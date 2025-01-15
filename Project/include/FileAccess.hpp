@@ -13,7 +13,7 @@ class FileAccess
         m_fileStream = new std::fstream(m_FilePath);
     }
     FileAccess();
-    void WriteBytesToFile(std::vector<std::byte> &ToWrite);
+    void WriteBytesToFile(std::vector<char> &ToWrite);
 
   private:
     std::string m_FilePath;

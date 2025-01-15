@@ -32,22 +32,25 @@ HttpClient::GetEndpointsFromString(std::string StringUrl, int port)
     return endpoints;
 }
 
-HttpClient::HttpContentData HttpClient::ExtractData(std::vector<std::byte> &load)
+HttpClient::HttpContentData
+HttpClient::ExtractData(std::vector<std::byte> &load)
 {
     HttpClient::HttpContentData returnData;
-    std::vector<char> vectorCharResult = HttpClient::GetCharContentFromBytes(load);
+    std::vector<char> vectorCharResult =
+        HttpClient::GetCharContentFromBytes(load);
     std::vector<char> body;
-    const std::string headerEnd = "\r\n\r\n";  // End of the header
+    const std::string headerEnd = "\r\n\r\n"; // End of the header
     std::string header;
 
     // Search for the header end in the vector of characters
     auto it = std::search(vectorCharResult.begin(), vectorCharResult.end(),
                           headerEnd.begin(), headerEnd.end());
 
-    if (it != vectorCharResult.end())  // Check if the end of the header is found
+    if (it != vectorCharResult.end()) // Check if the end of the header is found
     {
         // Extract the header (from the beginning to the found header end)
-        header = std::string(vectorCharResult.data(), std::distance(vectorCharResult.begin(), it));
+        header = std::string(vectorCharResult.data(),
+                             std::distance(vectorCharResult.begin(), it));
 
         // Extract the body (data after the header)
         auto bodyStart = it + headerEnd.size();
@@ -55,17 +58,17 @@ HttpClient::HttpContentData HttpClient::ExtractData(std::vector<std::byte> &load
     }
     else
     {
-        std::cerr << "Kein Header-Ende gefunden. Ganzer Input wird als Body interpretiert.\n ";
+        std::cerr << "Kein Header-Ende gefunden. Ganzer Input wird als Body "
+                     "interpretiert.\n ";
         // If no header end is found, the whole input is treated as the body
         body.assign(vectorCharResult.begin(), vectorCharResult.end());
     }
 
     returnData.Header = header;
-    returnData.content = body;  // Assuming you want to store the body as well
+    returnData.Body = body; // Assuming you want to store the body as well
 
     return returnData;
 }
-
 
 // Auslesen der bytes andhand des aktuellen sockets und des status des socket.
 // insgesamt dem ganzen verhalten aus csharp sehr aehnlich.
@@ -196,7 +199,9 @@ std::string HttpClient::DownloadString(std::string url, int port = 80)
 {
     // URL Check. http und https muessen entfernt werden, da sie sonst zu
     // fehlern bei der adress -aufloesung fuehren.
+
     url = checkURL(url);
+    auto results = HttpClient::GetURLSubValues(url);
 
     // Intern den aktuellen Endpunkt setzen.
     HttpClient::currentEndpointUrl = url;
@@ -237,6 +242,51 @@ std::string HttpClient::DownloadString(std::string url, int port = 80)
         return result;
     }
     return nullptr;
+}
+
+std::vector<std::string> HttpClient::GetURLSubValues(std::string url)
+{
+    std::vector<std::string> returnValues;
+    std::string currentStringValue;
+    std::string searchurl = url;
+    std::string searchmask = "://";
+    int urlStart = searchurl.find(searchmask);
+
+    if (urlStart != std::string::npos)
+    {
+        // Skip the initial "://" (e.g., in "https://", "ftp://")
+        searchurl = searchurl.substr(urlStart + searchmask.size());
+    }
+
+    int res = searchurl.find('/');
+    if (res > -1)
+    {
+        // Loop through each character in the modified searchurl
+        for (const char chara : searchurl)
+        {
+            if (chara == '/')
+            {
+                if (!currentStringValue.empty())
+                {
+                    returnValues.push_back(
+                        currentStringValue); // Add non-empty segments
+                }
+                currentStringValue.clear(); // Reset the current segment
+            }
+            else
+            {
+                currentStringValue += chara; // Add character to current segment
+            }
+        }
+
+        // Add the last segment if it exists
+        if (!currentStringValue.empty())
+        {
+            returnValues.push_back(currentStringValue);
+        }
+    }
+
+    return returnValues;
 }
 
 // prepares the given address and removes "http://" or "https://" from the
@@ -289,6 +339,5 @@ std::string HttpClient::getStringResult(std::vector<char> &resultBuffer)
                 (c == '\n' || c == '\r'); // Update flag for newline check
         }
     }
-
     return result;
 }
