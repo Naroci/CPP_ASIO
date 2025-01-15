@@ -1,0 +1,19 @@
+BasedOnStyle: llvm  # Oder "Google", "Microsoft"
+IndentWidth: 4      # Einrückung auf 4 Leerzeichen
+UseTab: Never       # Tabs deaktivieren, nur Leerzeichen verwenden
+
+BraceWrapping:
+  AfterClass: true                   # Klammer nach Klassen in neuer Zeile
+  AfterControlStatement: true        # Klammer nach if/else/for/while in neuer Zeile
+  AfterEnum: true                    # Klammer nach Enums in neuer Zeile
+  AfterFunction: true                # Klammer nach Funktionsdefinitionen in neuer Zeile
+  AfterNamespace: true               # Klammer nach Namespaces in neuer Zeile
+  AfterStruct: true                  # Klammer nach Structs in neuer Zeile
+  AfterUnion: true                   # Klammer nach Unions in neuer Zeile
+  BeforeCatch: true                  # `catch` in neuer Zeile
+  BeforeElse: true                   # `else` in neuer Zeile
+  SplitEmptyFunction: true           # Leere Funktionen aufteilen
+  SplitEmptyRecord: true             # Leere Klassen/Structs aufteilen
+  SplitEmptyNamespace: true          # Leere Namespaces aufteilen
+BreakBeforeBraces: Allman            # Allman-Stil (Klammern immer neue Zeile)
+

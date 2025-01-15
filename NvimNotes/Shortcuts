@@ -1,0 +1,12 @@
+CTRL + N            =>  Treeview in NVChad
+CTRL + W + W        =>  Toggle between Treeview and Active file
+CTRL + L            =>  Focus Rechts Fenster
+CTRL + H            =>  Focus left Window
+gt / :tabn          =>  next tab
+gT / :tabp          =>  previous tab
+:tabnew             =>  new tab
+TAB (KEY)           =>  toggle between tabs
+:q                  =>  close tab
+SPACE -> F -> M     =>  Format Code.
+SPACE -> H          =>  Toggle Terminal
+CTRL + X            =>  Back to Normal mode (ex. from Terminal)

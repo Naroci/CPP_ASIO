@@ -32,3 +32,5 @@
 *.app
 /Project/build
 .DS_Store
+/Project/CMakeFiles
+/Project/.cache

@@ -25,6 +25,8 @@ class HttpClient
         void SetBufferSize(int size) { mBufferSize = size;};
         int GetBufferSize() const { return mBufferSize;}
 
+        std::string ReadFromSocket(asio::ip::tcp::socket &sock, asio::error_code &ec);
+
         std::string GetEndpointAddress() const { return mEndpointAdr;}
 
         asio::ip::basic_resolver_results<asio::ip::tcp> GetEndpointsFromString(std::string StringUrl, int port);
@@ -33,6 +35,7 @@ class HttpClient
         bool GetIfReading() const { return mIsReading;}
 
     private:
+        std::string currentEndpointUrl;
         bool mIsReading;
         std::string checkURL (std::string url);
         int mBufferSize = 4096;

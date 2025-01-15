@@ -1,0 +1,31 @@
+sample .clang-format File Content:
+BasedOnStyle: llvm  # Oder "Google", "Microsoft" (Basisstil anpassen)
+IndentWidth: 4      # Einrückung auf 4 Leerzeichen setzen
+UseTab: Never       # Tabs deaktivieren, nur Leerzeichen verwenden
+
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+
+For a global applied formatting:
+
+1. Create a global .clang-format file.
+
+  >> nvim ~/.clang-format
+
+2. Add the export to Bash .zshrc or bashrc
+  
+  >> nvim ~/.zshrc oder ~/.bashrc
+  
+  Content:
+  ..
+  export CLANG_FORMAT_STYLE=file
+  export CLANG_FORMAT_CONFIG=~/.clang-format
+ ..
