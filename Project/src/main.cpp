@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-
 #include "../include/HttpClient.hpp"
 #include "../include/OSHelper.h"
 
@@ -11,8 +10,9 @@ bool readingData = false;
 
 int main()
 {
-    std::cout << "test \n";
+    std::cout << "TEST \n";
     std::string url;
+    std::cout << "Enter a url:";
     std::cin >> url;
     if (url.size() < 1)
         return 2;
@@ -21,6 +21,6 @@ int main()
     std::cout << OSHelper::GetCurrentOperatingSystemName() << std::endl;
     HttpClient httpClient;
     std::string result = httpClient.DownloadString(url, 80);
-    std::cout << result << std::endl;
+    // std::cout << result << std::endl;
     return 0;
 }

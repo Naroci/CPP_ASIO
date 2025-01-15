@@ -2,8 +2,6 @@
 // Created by naroci on 13.10.24.
 //
 #include "../include/HttpClient.hpp"
-
-#define ASIO_STANDALONE
 #include "../include/OSHelper.h"
 #include <asio.hpp>
 #include <asio/ts/buffer.hpp>
@@ -19,6 +17,8 @@
 #include <string>
 #include <vector>
 
+// Versucht anhand der  uebergebenen url und dessen port entsprechende
+// endpoints aufzuloesen.
 asio::ip::basic_resolver_results<asio::ip::tcp>
 HttpClient::GetEndpointsFromString(std::string StringUrl, int port)
 {
@@ -32,15 +32,54 @@ HttpClient::GetEndpointsFromString(std::string StringUrl, int port)
     return endpoints;
 }
 
-std::string HttpClient::ReadFromSocket(asio::ip::tcp::socket &sock,
-                                       asio::error_code &ec)
+HttpClient::HttpContentData HttpClient::ExtractData(std::vector<std::byte> &load)
 {
-    std::vector<char> collectedData;
-    std::string result;
+    HttpClient::HttpContentData returnData;
+    std::vector<char> vectorCharResult = HttpClient::GetCharContentFromBytes(load);
+    std::vector<char> body;
+    const std::string headerEnd = "\r\n\r\n";  // End of the header
+    std::string header;
+
+    // Search for the header end in the vector of characters
+    auto it = std::search(vectorCharResult.begin(), vectorCharResult.end(),
+                          headerEnd.begin(), headerEnd.end());
+
+    if (it != vectorCharResult.end())  // Check if the end of the header is found
+    {
+        // Extract the header (from the beginning to the found header end)
+        header = std::string(vectorCharResult.data(), std::distance(vectorCharResult.begin(), it));
+
+        // Extract the body (data after the header)
+        auto bodyStart = it + headerEnd.size();
+        body.assign(bodyStart, vectorCharResult.end());
+    }
+    else
+    {
+        std::cerr << "Kein Header-Ende gefunden. Ganzer Input wird als Body interpretiert.\n ";
+        // If no header end is found, the whole input is treated as the body
+        body.assign(vectorCharResult.begin(), vectorCharResult.end());
+    }
+
+    returnData.Header = header;
+    returnData.content = body;  // Assuming you want to store the body as well
+
+    return returnData;
+}
+
+
+// Auslesen der bytes andhand des aktuellen sockets und des status des socket.
+// insgesamt dem ganzen verhalten aus csharp sehr aehnlich.
+std::vector<std::byte>
+HttpClient::ReadBytesFromSocket(asio::ip::tcp::socket &sock,
+                                asio::error_code &ec)
+{
+
+    std::vector<std::byte> collectedBytes;
     int bytesCollected = 0;
     std::chrono::time_point timeStart = std::chrono::system_clock::now();
     if (sock.is_open())
     {
+        // Im idealfall spaeter auslagern.
         std::string requestHeader = "GET /index.html HTTP/1.1\r\n"
                                     "Host: " +
                                     HttpClient::currentEndpointUrl +
@@ -53,14 +92,14 @@ std::string HttpClient::ReadFromSocket(asio::ip::tcp::socket &sock,
 
         while (!ec)
         {
-            std::vector<char> mBuffer(mBufferSize);
+            std::vector<std::byte> mBuffer(mBufferSize);
             auto bytes = sock.read_some(
                 asio::buffer(mBuffer.data(), mBuffer.size()), ec);
             if (!ec && bytes > 0)
             {
+                collectedBytes.insert(collectedBytes.end(), (mBuffer.data()),
+                                      (mBuffer.data() + bytes));
                 bytesCollected += bytes;
-                collectedData.insert(collectedData.end(), mBuffer.begin(),
-                                     mBuffer.end());
             }
 
             if (ec || ec == asio::error::eof)
@@ -75,19 +114,97 @@ std::string HttpClient::ReadFromSocket(asio::ip::tcp::socket &sock,
     sock.close();
 
     std::cout << "bytes collected: " << bytesCollected / 1000.0 << std::endl;
-    std::cout << "took: " << duration.count() << std::endl;
-    result = getStringResult(collectedData);
+    std::cout << "took: "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(duration)
+                     .count()
+              << " ms" << std::endl;
 
+    return collectedBytes;
+}
+
+std::vector<char>
+HttpClient::GetCharContentFromBytes(std::vector<std::byte> &inputBytes)
+{
+    if (inputBytes.size() < 1)
+        return std::vector<char>();
+
+    std::vector<char> returnValue;
+    // returnValue.reserve(inputBytes.size());
+
+    std::vector<char> collectedData;
+    for (const auto byteVal : inputBytes)
+    {
+        char value = static_cast<char>(byteVal);
+        returnValue.push_back(value);
+    }
+
+    return returnValue;
+}
+
+std::string HttpClient::GetStringFromBytes(std::vector<std::byte> &inputBytes)
+{
+    if (inputBytes.size() < 1)
+        return "";
+
+    std::string returnValue;
+    returnValue.reserve(inputBytes.size());
+
+    std::vector<char> collectedData;
+    for (const auto byteVal : inputBytes)
+    {
+        char value = static_cast<char>(byteVal);
+        returnValue.push_back(value);
+    }
+
+    return returnValue;
+}
+
+std::string HttpClient::ReadFromSocket(asio::ip::tcp::socket &sock,
+                                       asio::error_code &ec)
+{
+    std::string result;
+    auto byteResult = ReadBytesFromSocket(sock, ec);
+    auto dataResult = ExtractData(byteResult);
+    result = GetStringFromBytes(byteResult);
+
+    // Ende des Response Header.
+    // -> Anhand des Index Header von Nutzlast trennen und entsprechend
+    // auswerten (bei string).
+    auto index = result.find("\r\n\r\n");
+
+    if (index > 0)
+    {
+        std::string header = result.substr(0, index);
+        if (header.size() > 0)
+        {
+            std::cout << "Header?>>>>>>>>>>:\n " << header
+                      << "\nHEADER END?\n\n";
+        }
+
+        std::string content = result.substr(index, result.size() - index);
+        if (content.size() > 0)
+        {
+            std::cout << "Content?>>>>>>>>>>:\n " << content
+                      << "\nCONTENT END?\n\n";
+        }
+    }
     return result;
 }
 
 // Fetches the content of the given url as a string and returns it.
 std::string HttpClient::DownloadString(std::string url, int port = 80)
 {
+    // URL Check. http und https muessen entfernt werden, da sie sonst zu
+    // fehlern bei der adress -aufloesung fuehren.
     url = checkURL(url);
+
+    // Intern den aktuellen Endpunkt setzen.
     HttpClient::currentEndpointUrl = url;
+
+    // Aufloesen der moeglichen Endpunkte.
     asio::ip::basic_resolver_results<asio::ip::tcp> endpoints =
         GetEndpointsFromString(url, port);
+
     if (!endpoints.empty())
     {
         // Display resolved IP addresses
@@ -112,10 +229,10 @@ std::string HttpClient::DownloadString(std::string url, int port = 80)
             std::cout << "Failed to connect to: " << ec.message() << std::endl;
             return NULL;
         }
+        // auto rbyteResult = ReadBytesFromSocket(socket, ec);
         std::string result = ReadFromSocket(socket, ec);
+        // std::string result = ReadFromSocket(socket, ec);
         HttpClient::context.stop();
-
-        // Convert the collected data to a string
 
         return result;
     }

@@ -20,7 +20,6 @@ void FileAccess::WriteBytesToFile(std::vector<std::byte> &ToWrite)
     }
 }
 
-
 std::fstream* FileAccess::getFileStream(){
     return m_fileStream;
 }

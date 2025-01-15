@@ -1,46 +1,53 @@
-//
-// Created by naroci on 13.10.24.
-//
-
 #ifndef HTTPCLIENT_HPP
 #define HTTPCLIENT_HPP
+
+#include <asio/ip/tcp.hpp>
 #include <string>
 #include <vector>
-#include <asio/ip/tcp.hpp>
-
-#endif //HTTPCLIENT_HPP
 
 class HttpClient
 {
-    public :
-        HttpClient()
-        {
-          
-        }
+  public:
+    HttpClient() {}
+    struct HttpContentData
+    {
+        std::string Header;
+        std::vector<char> content;
+    };
 
-        // Main Test Function.
-        std::string DownloadString(std::string url, int port);
+    HttpContentData ExtractData(std::vector<std::byte> &load);
 
-        // Getters &  Setters.
-        void SetBufferSize(int size) { mBufferSize = size;};
-        int GetBufferSize() const { return mBufferSize;}
+    // Main Test Function.
+    std::string DownloadString(std::string url, int port);
 
-        std::string ReadFromSocket(asio::ip::tcp::socket &sock, asio::error_code &ec);
+    // Getters & Setters.
+    void SetBufferSize(int size) { mBufferSize = size; };
+    int GetBufferSize() const { return mBufferSize; }
 
-        std::string GetEndpointAddress() const { return mEndpointAdr;}
+    std::vector<std::byte> ReadBytesFromSocket(asio::ip::tcp::socket &sock,
+                                               asio::error_code &ec);
+    std::string ReadFromSocket(asio::ip::tcp::socket &sock,
+                               asio::error_code &ec);
 
-        asio::ip::basic_resolver_results<asio::ip::tcp> GetEndpointsFromString(std::string StringUrl, int port);
+    std::string GetEndpointAddress() const { return mEndpointAdr; }
 
-        int GetPort() const { return mPort;}
-        bool GetIfReading() const { return mIsReading;}
+    asio::ip::basic_resolver_results<asio::ip::tcp>
+    GetEndpointsFromString(std::string StringUrl, int port);
 
-    private:
-        std::string currentEndpointUrl;
-        bool mIsReading;
-        std::string checkURL (std::string url);
-        int mBufferSize = 4096;
-        std::string getStringResult(std::vector<char> &resultBuffer);
-        int mPort = 80;
-        std::string mEndpointAdr;
-        asio::io_context context;
+    int GetPort() const { return mPort; }
+    bool GetIfReading() const { return mIsReading; }
+
+  private:
+  std::vector<char> GetCharContentFromBytes(std::vector<std::byte> &inputBytes);
+    std::string currentEndpointUrl;
+    bool mIsReading;
+    std::string checkURL(std::string url);
+    int mBufferSize = 4096;
+    std::string getStringResult(std::vector<char> &resultBuffer);
+    int mPort = 80;
+    std::string mEndpointAdr;
+    std::string GetStringFromBytes(std::vector<std::byte> &inputBytes);
+    asio::io_context context;
 };
+
+#endif // HTTPCLIENT_HPP
