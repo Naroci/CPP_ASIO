@@ -5,6 +5,7 @@
 
 #include "../include/HttpClient.hpp"
 #include "../include/OSHelper.h"
+#include "../include/FileAccess.hpp"
 
 bool readingData = false;
 
@@ -21,6 +22,16 @@ int main()
     std::cout << OSHelper::GetCurrentOperatingSystemName() << std::endl;
     HttpClient httpClient;
     std::string result = httpClient.DownloadString(url, 80);
-    // std::cout << result << std::endl;
+    std::cout << "RESULT:::" << std::endl;
+    std::cout << result << std::endl;
+    
+    std::cout << "Enter a FilePath:";
+    std::string filePath;
+    std::cin >> filePath;
+    if (!filePath.empty())
+    {
+        FileAccess acces(filePath);
+        acces.WriteStringToFile(result);
+    }
     return 0;
 }

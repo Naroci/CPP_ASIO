@@ -1,6 +1,7 @@
 #ifndef HTTPCLIENT_HPP
 #define HTTPCLIENT_HPP
 
+#include "RequestHeaderBuilder.hpp"
 #include <asio/ip/tcp.hpp>
 #include <string>
 #include <vector>
@@ -26,7 +27,9 @@ class HttpClient
 
     std::vector<std::byte> ReadBytesFromSocket(asio::ip::tcp::socket &sock,
                                                asio::error_code &ec);
-    std::string ReadFromSocket(asio::ip::tcp::socket &sock,
+
+
+    HttpContentData ReadFromSocket(asio::ip::tcp::socket &sock,
                                asio::error_code &ec);
 
     std::string GetEndpointAddress() const { return mEndpointAdr; }
@@ -38,17 +41,22 @@ class HttpClient
     bool GetIfReading() const { return mIsReading; }
 
   private:
-  std::vector<char> GetCharContentFromBytes(std::vector<std::byte> &inputBytes);
-    std::string currentEndpointUrl;
     bool mIsReading;
-    std::string checkURL(std::string url);
-    int mBufferSize = 4096;
-    std::string getStringResult(std::vector<char> &resultBuffer);
     int mPort = 80;
+    int mBufferSize = 4096;
+
+    std::string currentEndpointUrl;
     std::string mEndpointAdr;
-    std::string GetStringFromBytes(std::vector<std::byte> &inputBytes);
+    std::string mHeader;
+
     asio::io_context context;
-    std::vector<std::string> GetURLSubValues(std::string url);
+    RequestHeaderBuilder mHeaderBuilder;
+
+    std::string checkURL(std::string url);
+    std::string getStringResult(std::vector<char> &resultBuffer);
+
+    std::string GetStringFromBytes(std::vector<std::byte> &inputBytes);
+    std::vector<char> GetCharContentFromBytes(std::vector<std::byte> &inputBytes);
 };
 
 #endif // HTTPCLIENT_HPP

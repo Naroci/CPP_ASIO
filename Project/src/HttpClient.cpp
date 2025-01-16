@@ -17,8 +17,10 @@
 #include <string>
 #include <vector>
 
-// Versucht anhand der  uebergebenen url und dessen port entsprechende
-// endpoints aufzuloesen.
+/// @brief Tries to resolve all endpoints by the given Url (std::string) and Port (int)
+/// @param StringUrl Base URL Address (raw without :// information like http://, ftp:// etc.)
+/// @param port The Port (80, 443 etc).
+/// @return asio::ip::basic_resolver_results<asio::ip::tcp>
 asio::ip::basic_resolver_results<asio::ip::tcp>
 HttpClient::GetEndpointsFromString(std::string StringUrl, int port)
 {
@@ -32,6 +34,9 @@ HttpClient::GetEndpointsFromString(std::string StringUrl, int port)
     return endpoints;
 }
 
+/// @brief Tries to extract the data from the given bytes and returns them as a HttpContentData. Holding its Header and Body.
+/// @param load The raw data as a vector<byte> transfered from the stream.
+/// @return HttpContentData
 HttpClient::HttpContentData
 HttpClient::ExtractData(std::vector<std::byte> &load)
 {
@@ -76,21 +81,14 @@ std::vector<std::byte>
 HttpClient::ReadBytesFromSocket(asio::ip::tcp::socket &sock,
                                 asio::error_code &ec)
 {
-
     std::vector<std::byte> collectedBytes;
     int bytesCollected = 0;
     std::chrono::time_point timeStart = std::chrono::system_clock::now();
     if (sock.is_open())
     {
-        // Im idealfall spaeter auslagern.
-        std::string requestHeader = "GET /index.html HTTP/1.1\r\n"
-                                    "Host: " +
-                                    HttpClient::currentEndpointUrl +
-                                    "\r\n"
-                                    "Connection: close\r\n\r\n";
-
+        std::cout << "Writing Header: \n" << mHeader;
         sock.write_some(
-            asio::buffer(requestHeader.data(), requestHeader.size()), ec);
+            asio::buffer(HttpClient::mHeader.data(), HttpClient::mHeader.size()), ec);
         sock.wait(sock.wait_read);
 
         while (!ec)
@@ -125,6 +123,9 @@ HttpClient::ReadBytesFromSocket(asio::ip::tcp::socket &sock,
     return collectedBytes;
 }
 
+/// @brief Converts the given std::vector<std::byte> into a std::vector<char>
+/// @param inputBytes the input vector of bytes.
+/// @return std::vector<char>
 std::vector<char>
 HttpClient::GetCharContentFromBytes(std::vector<std::byte> &inputBytes)
 {
@@ -132,7 +133,6 @@ HttpClient::GetCharContentFromBytes(std::vector<std::byte> &inputBytes)
         return std::vector<char>();
 
     std::vector<char> returnValue;
-    // returnValue.reserve(inputBytes.size());
 
     std::vector<char> collectedData;
     for (const auto byteVal : inputBytes)
@@ -162,56 +162,28 @@ std::string HttpClient::GetStringFromBytes(std::vector<std::byte> &inputBytes)
     return returnValue;
 }
 
-std::string HttpClient::ReadFromSocket(asio::ip::tcp::socket &sock,
+HttpClient::HttpContentData HttpClient::ReadFromSocket(asio::ip::tcp::socket &sock,
                                        asio::error_code &ec)
 {
-    std::string result;
+    HttpClient::HttpContentData result;
     auto byteResult = ReadBytesFromSocket(sock, ec);
     auto dataResult = ExtractData(byteResult);
-    result = GetStringFromBytes(byteResult);
-
-    // Ende des Response Header.
-    // -> Anhand des Index Header von Nutzlast trennen und entsprechend
-    // auswerten (bei string).
-    auto index = result.find("\r\n\r\n");
-
-    if (index > 0)
-    {
-        std::string header = result.substr(0, index);
-        if (header.size() > 0)
-        {
-            std::cout << "Header?>>>>>>>>>>:\n " << header
-                      << "\nHEADER END?\n\n";
-        }
-
-        std::string content = result.substr(index, result.size() - index);
-        if (content.size() > 0)
-        {
-            std::cout << "Content?>>>>>>>>>>:\n " << content
-                      << "\nCONTENT END?\n\n";
-        }
-    }
+  
+    result = dataResult;
     return result;
 }
 
-// Fetches the content of the given url as a string and returns it.
+/// @brief Downloads a string from the given url and port and returns it.
+/// @param url the url (ex. http://wwww.gooogle.de)
+/// @param port ex. 80, 443 etc
+/// @return NULL || std::string
 std::string HttpClient::DownloadString(std::string url, int port = 80)
 {
     // URL Check. http und https muessen entfernt werden, da sie sonst zu
     // fehlern bei der adress -aufloesung fuehren.
-
     url = checkURL(url);
-    auto results = HttpClient::GetURLSubValues(url);
-    if (!results.empty())
-    {
-        for (const std::string entry : results)
-        {
-            std::cout << entry << "\n";
-        }
-
-        std::cout << "\n";
-    }
-
+    std::string testRequestHeader = mHeaderBuilder.CreateHeaderRequest(url,RequestHeaderBuilder::GET);
+    HttpClient::mHeader = testRequestHeader;
     // Intern den aktuellen Endpunkt setzen.
     HttpClient::currentEndpointUrl = url;
 
@@ -244,58 +216,13 @@ std::string HttpClient::DownloadString(std::string url, int port = 80)
             return NULL;
         }
         // auto rbyteResult = ReadBytesFromSocket(socket, ec);
-        std::string result = ReadFromSocket(socket, ec);
+        HttpClient::HttpContentData result = ReadFromSocket(socket, ec);
         // std::string result = ReadFromSocket(socket, ec);
         HttpClient::context.stop();
-
-        return result;
+        std::string stringResult = getStringResult(result.Body);
+        return stringResult;
     }
-    return nullptr;
-}
-
-std::vector<std::string> HttpClient::GetURLSubValues(std::string url)
-{
-    std::vector<std::string> returnValues;
-    std::string currentStringValue;
-    std::string searchurl = url;
-    std::string searchmask = "://";
-    int urlStart = searchurl.find(searchmask);
-
-    if (urlStart != std::string::npos)
-    {
-        // Skip the initial "://" (e.g., in "https://", "ftp://")
-        searchurl = searchurl.substr(urlStart + searchmask.size());
-    }
-
-    int res = searchurl.find('/');
-    if (res > -1)
-    {
-        // Loop through each character in the modified searchurl
-        for (const char chara : searchurl)
-        {
-            if (chara == '/')
-            {
-                if (!currentStringValue.empty())
-                {
-                    returnValues.push_back(
-                        currentStringValue); // Add non-empty segments
-                }
-                currentStringValue.clear(); // Reset the current segment
-            }
-            else
-            {
-                currentStringValue += chara; // Add character to current segment
-            }
-        }
-
-        // Add the last segment if it exists
-        if (!currentStringValue.empty())
-        {
-            returnValues.push_back(currentStringValue);
-        }
-    }
-
-    return returnValues;
+    return NULL;
 }
 
 // prepares the given address and removes "http://" or "https://" from the

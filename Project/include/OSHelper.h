@@ -4,7 +4,6 @@
 
 class OSHelper {
     public: 
-
         /**
         * An Enum specifying all Operating-Systems.
         */
@@ -15,7 +14,6 @@ class OSHelper {
             Unspecified
         };
 
-        
         /**
         * @return an Enum of OperatingSystem for the current OS.
         */
