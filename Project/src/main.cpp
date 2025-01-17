@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 
+#include "../include/FileAccess.hpp"
 #include "../include/HttpClient.hpp"
 #include "../include/OSHelper.h"
-#include "../include/FileAccess.hpp"
 
 bool readingData = false;
 
@@ -21,17 +21,28 @@ int main()
     int asd = 0;
     std::cout << OSHelper::GetCurrentOperatingSystemName() << std::endl;
     HttpClient httpClient;
-    std::string result = httpClient.DownloadString(url, 80);
-    std::cout << "RESULT:::" << std::endl;
-    std::cout << result << std::endl;
-    
-    std::cout << "Enter a FilePath:";
-    std::string filePath;
-    std::cin >> filePath;
-    if (!filePath.empty())
+    auto result = httpClient.DownloadByteData(url, 80);
+    /*
+        auto result = httpClient.DownloadString(url, 80);
+        std::cout << "RESULT:::" << std::endl;
+        std::cout << result << std::endl;
+    */
+
+    if (result.size() > 0)
     {
-        FileAccess acces(filePath);
-        acces.WriteStringToFile(result);
+        std::cout << "Enter a FilePath:";
+        std::string filePath;
+        std::cin >> filePath;
+        if (!filePath.empty())
+        {
+            FileAccess acces(filePath);
+            acces.WriteBytesToFile(result);
+        }
     }
+    else
+    {
+        std::cout << "Nothing Downloaded..." << std::endl;
+    }
+
     return 0;
 }

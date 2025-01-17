@@ -35,6 +35,7 @@ std::string RequestHeaderBuilder::CreateHeaderRequest(std::string UrlRequest,
                                                       RequestType requestType)
 {
     std::vector<std::string>  parsedUrl = ParseUrl(UrlRequest);
+    
     std::string host = parsedUrl.size() > 0 ? parsedUrl[0] : UrlRequest;
 
     std::string subReq = GetSubrequest(host,UrlRequest);

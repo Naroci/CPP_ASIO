@@ -3,12 +3,15 @@
 void FileAccess::WriteBytesToFile(std::vector<char> &ToWrite)
 {
     // Überprüfen, ob der Stream geöffnet ist
-    if (getFileStream()->is_open())
+    auto strm = FileAccess::getFileStream();
+    if (strm && strm->is_open())
     {
-        for (size_t i = 0; i < ToWrite.size(); ++i)
+        // Direkter Schreibvorgang für den gesamten Vector
+        strm->write(ToWrite.data(), ToWrite.size());
+
+        if (!strm->good())
         {
-            // Schreibe das Byte
-            getFileStream()->write(&ToWrite[i], sizeof(ToWrite[i]));
+            std::cerr << "Fehler beim Schreiben der Datei!" << std::endl;
         }
     }
     else
@@ -17,16 +20,18 @@ void FileAccess::WriteBytesToFile(std::vector<char> &ToWrite)
     }
 }
 
-void FileAccess::WriteStringToFile(std::string &ToWrite) 
+void FileAccess::WriteStringToFile(std::string &ToWrite)
 {
-     // Überprüfen, ob der Stream geöffnet ist
+    // Überprüfen, ob der Stream geöffnet ist
     auto strm = FileAccess::getFileStream();
-    if (strm->is_open())
+    if (strm && strm->is_open())
     {
-        for (size_t i = 0; i < ToWrite.size(); ++i)
+        // Direkter Schreibvorgang für den gesamten Vector
+        strm->write(ToWrite.data(), ToWrite.size());
+
+        if (!strm->good())
         {
-            // Schreibe das Byte
-            getFileStream()->write(&ToWrite[i], sizeof(ToWrite[i]));
+            std::cerr << "Fehler beim Schreiben der Datei!" << std::endl;
         }
     }
     else
