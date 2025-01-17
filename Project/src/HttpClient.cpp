@@ -219,10 +219,11 @@ std::vector<char> HttpClient::DownloadByteData(std::string url, int port = 80)
 bool HttpClient::connectClient(std::string url, int port,
                                RequestHeaderBuilder::RequestType type)
 {
+
+    url = checkURL(url);
     std::string testRequestHeader =
         mHeaderBuilder.CreateHeaderRequest(url, type);
 
-    url = checkURL(url);
     auto parsedurl = mHeaderBuilder.ParseUrl(url);
    
     HttpClient::mHeader = testRequestHeader;

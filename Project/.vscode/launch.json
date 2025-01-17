@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         
         {
             "name": "MacOS - Build & Debug",
@@ -20,17 +21,17 @@
         },
         {
             "name": "Linux - Build & Debug",
+            "preLaunchTask": "Build",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/${workspaceFolderBasename}.out",
+            "program": "${workspaceFolder}/build/AsioExample",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "preLaunchTask": "Build"
+            "miDebuggerPath": "/usr/bin/gdb"
         },
         {
             "name": "Windows - Build & Debug",
