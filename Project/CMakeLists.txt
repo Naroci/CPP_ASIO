@@ -25,8 +25,6 @@ file(GLOB_RECURSE HEADERS
         include/*.h
 )
 
-
-
 # Include ASIO headers
 include_directories(${ASIO_INCLUDE_DIR})
 
@@ -38,4 +36,3 @@ add_executable(AsioExample ${SOURCES} ${HEADERS}
 
 # Link with pthread if needed (required for multithreading with ASIO)
 target_link_libraries(AsioExample pthread)
-
